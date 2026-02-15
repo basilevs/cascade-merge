@@ -129,6 +129,8 @@ export async function runPost(): Promise<void> {
   const octokit = github.getOctokit(token);
   const repo = github.context.repo;
 
+  core.info("Length: " + token.length);
+
   for (const task of tasks) {
     core.startGroup(`Finalizing: ${task.tempBranch}`);
     try {

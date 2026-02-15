@@ -24329,6 +24329,7 @@ async function runPost() {
   const token = getInput("token");
   const octokit = getOctokit(token);
   const repo = context2.repo;
+  info("Length: " + token.length);
   for (const task of tasks) {
     startGroup(`Finalizing: ${task.tempBranch}`);
     try {
