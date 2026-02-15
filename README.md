@@ -1,6 +1,6 @@
 # Usage example
 ```yaml
-name: Cascade Handler
+name: Cascade Merge
 
 on:
   workflow_run:
