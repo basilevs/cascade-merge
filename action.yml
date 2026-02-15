@@ -1,0 +1,21 @@
+name: 'Cascade Merge'
+description: 'Merges upstream changes to dependent downstream branches using temporary branches.'
+author: 'Gemini'
+inputs:
+  token:
+    description: 'GITHUB_TOKEN or a PAT to create PRs'
+    required: true
+  dependency_graph:
+    description: 'Map of branches. Format: "upstream: downstream1 downstream2"'
+    required: true
+  user_name:
+    description: 'Git user name for commits'
+    default: 'github-actions[bot]'
+  user_email:
+    description: 'Git email for commits'
+    default: '41898282+github-actions[bot]@users.noreply.github.com'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+  post: 'dist/index.js'
