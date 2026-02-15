@@ -1,22 +1,21 @@
-import * as core from '@actions/core';
-import { runMain } from './logic';
-import { runPost } from './logic';
+import { getState, saveState, setFailed } from '@actions/core';
+import { runMain, runPost } from './logic.js';
 
 const STATE_KEY_IS_POST = 'IS_POST_PROCESS';
 
 async function run(): Promise<void> {
   try {
-    const isPost = core.getState(STATE_KEY_IS_POST);
+    const isPost = getState(STATE_KEY_IS_POST);
     
     // Determine if we are in the 'main' phase or 'post' phase
     if (!isPost) {
-      core.saveState(STATE_KEY_IS_POST, 'true');
+        saveState(STATE_KEY_IS_POST, 'true');
       await runMain();
     } else {
       await runPost();
     }
   } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message);
+    if (error instanceof Error) setFailed(error.message);
   }
 }
 

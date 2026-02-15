@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import * as git from './git';
+import { merge, fetch, push, execCmd, checkout, setupUser, branchExistsRemote } from './git.js';
 
 interface MergeTask {
   upstream: string;
@@ -45,10 +45,10 @@ export async function runMain(): Promise<void> {
   core.info(`Processing cascade for ${headBranch} -> [${downstreams.join(', ')}]`);
 
   // 3. Setup Git
-  await git.setupUser(core.getInput('user_name'), core.getInput('user_email'));
+  await setupUser(core.getInput('user_name'), core.getInput('user_email'));
   
   // Fetch upstream specifically
-  await git.fetch(headBranch);
+  await fetch(headBranch);
 
   const successfulTasks: MergeTask[] = [];
 
@@ -59,28 +59,28 @@ export async function runMain(): Promise<void> {
     
     try {
       // Fetch downstream and potential existing temp branch
-      await git.fetch(downstream);
-      await git.fetch(tempBranch).catch(() => {}); // Ignore fail if temp doesn't exist
+      await fetch(downstream);
+      await fetch(tempBranch).catch(() => {}); // Ignore fail if temp doesn't exist
 
       // Checkout Logic
-      const tempExists = await git.branchExistsRemote(tempBranch);
+      const tempExists = await branchExistsRemote(tempBranch);
       
       if (tempExists) {
-        await git.checkout(tempBranch);
+        await checkout(tempBranch);
         // Reset to match remote exactly to avoid local divergence
-        await git.execCmd(['reset', '--hard', `origin/${tempBranch}`]);
+        await execCmd(['reset', '--hard', `origin/${tempBranch}`]);
       } else {
         // If new, start from downstream
-        await git.execCmd(['checkout', '-b', tempBranch, `origin/${downstream}`]);
+        await execCmd(['checkout', '-b', tempBranch, `origin/${downstream}`]);
       }
 
       // Merge 1: Merge the specific Upstream SHA (The build artifact)
       // We assume strict merge requirements (fail on conflict)
-      await git.merge(headSha, `Merge upstream commit ${headSha} into ${tempBranch}`);
+      await merge(headSha, `Merge upstream commit ${headSha} into ${tempBranch}`);
 
       // Merge 2: Merge the latest Downstream (Syncing)
       // This ensures we are up to date with target before pushing
-      await git.merge(`origin/${downstream}`, `Sync with ${downstream}`);
+      await merge(`origin/${downstream}`, `Sync with ${downstream}`);
 
       successfulTasks.push({
         upstream: headBranch,
@@ -126,10 +126,10 @@ export async function runPost(): Promise<void> {
       // We must ensure we push the specific temp branch, but we might not be checked out on it
       // if there were multiple tasks.
       // FORCE CHECKOUT to ensure we push the right context if files were changed.
-      await git.checkout(task.tempBranch);
+      await checkout(task.tempBranch);
       
       // Push
-      await git.push(task.tempBranch);
+      await push(task.tempBranch);
 
       // 2. Create Pull Request
       // Check if PR exists first to avoid duplicates
