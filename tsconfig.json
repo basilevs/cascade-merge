@@ -1,0 +1,6 @@
+{
+  "extends": "@tsconfig/node23/tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src"
+  }
+}

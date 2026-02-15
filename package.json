@@ -2,8 +2,10 @@
   "name": "cascade-merge",
   "version": "0.0.1",
   "description": "Cascade Merge Github Action",
+  "private": true,
   "main": "index.js",
   "scripts": {
+    "build": "ncc build src/main.ts -o dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,6 +25,7 @@
     "@actions/github": "^9.0.0"
   },
   "devDependencies": {
+    "@tsconfig/node23": "^23.0.4",
     "@vercel/ncc": "^0.38.4",
     "typescript": "^5.9.3"
   }
