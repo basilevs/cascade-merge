@@ -29,7 +29,7 @@ export async function merge(ref: string, message: string) {
   try {
     await exec.exec('git', ['merge', '--no-edit', '-m', message, ref]);
   } catch (e) {
-    throw new Error(`Conflict merging ${ref}`);
+    throw new Error(`Conflict merging ${ref}`, {cause: e});
   }
 }
 

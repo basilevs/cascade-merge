@@ -15,7 +15,12 @@ async function run(): Promise<void> {
       await runPost();
     }
   } catch (error) {
-    if (error instanceof Error) setFailed(error.message);
+    if (error instanceof Error) {
+        setFailed(error.message);
+    } else {
+        setFailed("Unknown error: " + error);
+        throw error;
+    }
   }
 }
 

@@ -13,9 +13,7 @@ interface MergeTask {
 const STATE_MERGE_TASKS = 'MERGE_TASKS_JSON';
 
 export async function runMain(): Promise<void> {
-  const token = core.getInput('token');
   const graphRaw = core.getInput('dependency_graph');
-  const octokit = github.getOctokit(token);
   
   // 1. Validate Workflow Trigger
   if (github.context.eventName !== 'workflow_run') {
@@ -91,8 +89,8 @@ export async function runMain(): Promise<void> {
 
       core.info(`✅ Successfully prepared ${tempBranch}`);
 
-    } catch (e: any) {
-      core.error(`Failed to merge for ${downstream}: ${e.message}`);
+    } catch (e) {
+      core.error(`Failed to merge for ${downstream}: ${e instanceof Error ? e.message : ""+e}`);
       // Per requirements: "Any failure of automatic merge should result in action failure"
       throw e; 
     } finally {
@@ -156,8 +154,9 @@ export async function runPost(): Promise<void> {
         core.info(`PR already exists for ${task.downstream}`);
       }
 
-    } catch (e: any) {
-      core.setFailed(`Failed post-action for ${task.tempBranch}: ${e.message}`);
+    } catch (e) {
+      core.setFailed(`Failed post-action for ${task.tempBranch}: ${e instanceof Error ? e.message : "" + e}`);
+      throw e;
     } finally {
       core.endGroup();
     }
