@@ -144,6 +144,8 @@ export async function runPost(): Promise<void> {
       // FORCE CHECKOUT to ensure we push the right context if files were changed.
       await checkout(task.tempBranch);
 
+      let prefix = github.context.serverUrl.replace("https://", "https://" + token + "@");
+      await execCmd(["remote", "set-url", "origin", prefix + "/" + github.context.repo.owner + "/" + github.context.repo.repo + "/"]);
       // Push
       await push(task.tempBranch);
 

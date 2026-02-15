@@ -24333,6 +24333,8 @@ async function runPost() {
     startGroup(`Finalizing: ${task.tempBranch}`);
     try {
       await checkout(task.tempBranch);
+      let prefix = context2.serverUrl.replace("https://", "https://" + token + "@");
+      await execCmd(["remote", "set-url", "origin", prefix + "/" + context2.repo.owner + "/" + context2.repo.repo + "/"]);
       await push(task.tempBranch);
       const { data: existingPrs } = await octokit.rest.pulls.list({
         ...repo,
