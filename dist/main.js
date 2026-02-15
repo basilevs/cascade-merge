@@ -24228,7 +24228,11 @@ async function fetch2(branch) {
   await exec("git", ["fetch", "origin", branch]);
 }
 async function branchExistsRemote(branch) {
-  const exitCode = await exec("git", ["ls-remote", "--exit-code", "--heads", "origin", branch], { ignoreReturnCode: true });
+  const exitCode = await exec(
+    "git",
+    ["ls-remote", "--exit-code", "--heads", "origin", branch],
+    { ignoreReturnCode: true }
+  );
   return exitCode === 0;
 }
 async function checkout(branch) {
@@ -24241,7 +24245,7 @@ async function merge2(ref, message) {
   try {
     await exec("git", ["merge", "--no-edit", "-m", message, ref]);
   } catch (e) {
-    throw new Error(`Conflict merging ${ref}`);
+    throw new Error(`Conflict merging ${ref}`, { cause: e });
   }
 }
 async function push(branch) {
@@ -24251,9 +24255,7 @@ async function push(branch) {
 // src/logic.ts
 var STATE_MERGE_TASKS = "MERGE_TASKS_JSON";
 async function runMain() {
-  const token = getInput("token");
   const graphRaw = getInput("dependency_graph");
-  const octokit = getOctokit(token);
   if (context2.eventName !== "workflow_run") {
     info("This action only runs on workflow_run events. Skipping.");
     return;
@@ -24263,16 +24265,22 @@ async function runMain() {
   const headBranch = payload.workflow_run?.head_branch;
   const headSha = payload.workflow_run?.head_sha;
   if (runConclusion !== "success") {
-    info(`Original workflow concluded with '${runConclusion}'. Skipping cascade.`);
+    info(
+      `Original workflow concluded with '${runConclusion}'. Skipping cascade.`
+    );
     return;
   }
   const dependencies = parseGraph(graphRaw);
   const downstreams = dependencies.get(headBranch);
   if (!downstreams || downstreams.length === 0) {
-    info(`No downstream dependencies defined for branch '${headBranch}'. Skipping.`);
+    info(
+      `No downstream dependencies defined for branch '${headBranch}'. Skipping.`
+    );
     return;
   }
-  info(`Processing cascade for ${headBranch} -> [${downstreams.join(", ")}]`);
+  info(
+    `Processing cascade for ${headBranch} -> [${downstreams.join(", ")}]`
+  );
   await setupUser(getInput("user_name"), getInput("user_email"));
   await fetch2(headBranch);
   const successfulTasks = [];
@@ -24290,7 +24298,10 @@ async function runMain() {
       } else {
         await execCmd(["checkout", "-b", tempBranch, `origin/${downstream}`]);
       }
-      await merge2(headSha, `Merge upstream commit ${headSha} into ${tempBranch}`);
+      await merge2(
+        headSha,
+        `Merge upstream commit ${headSha} into ${tempBranch}`
+      );
       await merge2(`origin/${downstream}`, `Sync with ${downstream}`);
       successfulTasks.push({
         upstream: headBranch,
@@ -24300,7 +24311,9 @@ async function runMain() {
       });
       info(`\u2705 Successfully prepared ${tempBranch}`);
     } catch (e) {
-      error(`Failed to merge for ${downstream}: ${e.message}`);
+      error(
+        `Failed to merge for ${downstream}: ${e instanceof Error ? e.message : "" + e}`
+      );
       throw e;
     } finally {
       endGroup();
@@ -24343,7 +24356,10 @@ Source Commit: ${task.originalSha}`;
         info(`PR already exists for ${task.downstream}`);
       }
     } catch (e) {
-      setFailed(`Failed post-action for ${task.tempBranch}: ${e.message}`);
+      setFailed(
+        `Failed post-action for ${task.tempBranch}: ${e instanceof Error ? e.message : "" + e}`
+      );
+      throw e;
     } finally {
       endGroup();
     }
@@ -24375,7 +24391,12 @@ async function run() {
       await runPost();
     }
   } catch (error2) {
-    if (error2 instanceof Error) setFailed(error2.message);
+    if (error2 instanceof Error) {
+      setFailed(error2.message);
+    } else {
+      setFailed("Unknown error: " + error2);
+      throw error2;
+    }
   }
 }
 run();
