@@ -1,0 +1,29 @@
+{
+  "name": "cascade-merge",
+  "version": "0.0.1",
+  "description": "Cascade Merge Github Action",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/basilevs/cascade-merge.git"
+  },
+  "keywords": [],
+  "author": "Vasili Gulevich",
+  "license": "EPL-2.0",
+  "bugs": {
+    "url": "https://github.com/basilevs/cascade-merge/issues"
+  },
+  "homepage": "https://github.com/basilevs/cascade-merge#readme",
+  "dependencies": {
+    "@actions/core": "^3.0.0",
+    "@actions/exec": "^3.0.0",
+    "@actions/github": "^9.0.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.4",
+    "typescript": "^5.9.3"
+  }
+}
