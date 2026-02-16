@@ -9,11 +9,15 @@ on:
 
 jobs:
   cascade:
+    permissions:
+      pull-requests: write
+      contents: write
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
         with:
+          token: ${{ secrets.PAT_TOKEN }} # To trigger downstream workflows after push
           fetch-depth: 0 # Important for merge history
 
       # Step 1: Execute the Merge Action (Main Phase)
@@ -22,7 +26,7 @@ jobs:
         id: cascade
         uses: ./path/to/action # or owner/repo@v1
         with:
-          token: ${{ secrets.PAT_TOKEN }} # Use PAT to trigger downstream workflows
+          token: ${{ secrets.PAT_TOKEN }} # Used to create a PR, optional
           dependency_graph: |
             release/1.0: release/1.1 experiment4
             release/1.1: release/1.2

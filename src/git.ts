@@ -5,38 +5,46 @@ export async function setupUser(name: string, email: string) {
   await exec.exec("git", ["config", "user.email", email]);
 }
 
-export async function fetch(branch: string) {
+export async function fetch(branches: string[]): Promise<boolean> {
   // Fetch with enough depth to allow merging.
   // Using unshallow if needed is safer but slower.
   // Here we assume standard fetch of specific branch.
-  await exec.exec("git", ["fetch", "origin", branch]);
+
+  return 0 === await exec.exec("git", ["fetch", "origin", ...branches.map(branch =>  `+${branch}:origin/${branch}`)], { ignoreReturnCode: true });
 }
 
-export async function branchExistsRemote(branch: string): Promise<boolean> {
+export async function branchExists(branch: string): Promise<boolean> {
   const exitCode = await exec.exec(
-    "git",
-    ["ls-remote", "--exit-code", "--heads", "origin", branch],
+    "git", ['rev-parse', '--verify', '--quiet', branch],
     { ignoreReturnCode: true },
   );
   return exitCode === 0;
 }
 
 export async function checkout(branch: string) {
-  await exec.exec("git", ["checkout", branch]);
+  return await execCmd(["checkout", branch]);
 }
 
 export async function execCmd(args: string[]) {
   await exec.exec("git", args);
 }
 
+export async function mergeWithDefaultComment(ref: string) {
+  try {
+    return await execCmd(["merge", "--no-edit", ref]);
+  } catch (e) {
+    throw new Error(`Conflict merging ${ref}`, { cause: e });
+  }
+}
+
 export async function merge(ref: string, message: string) {
   try {
-    await exec.exec("git", ["merge", "--no-edit", "-m", message, ref]);
+    return await execCmd(["merge", "--no-edit", "-m", message, ref]);
   } catch (e) {
     throw new Error(`Conflict merging ${ref}`, { cause: e });
   }
 }
 
 export async function push(branch: string) {
-  await exec.exec("git", ["push", "origin", branch]);
+  return await execCmd(["push", "origin", branch]);
 }

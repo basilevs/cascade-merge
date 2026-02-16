@@ -4,7 +4,7 @@ author: "Gemini"
 inputs:
   token:
     description: "GITHUB_TOKEN or a PAT to create PRs"
-    required: true
+    default: ${{ github.token }}
   dependency_graph:
     description: 'Map of branches. Format: "upstream: downstream1 downstream2"'
     required: true
@@ -18,4 +18,4 @@ inputs:
 runs:
   using: "node20"
   main: "dist/main.js"
-  post: "dist/main.js"
+  post: "dist/post.js"

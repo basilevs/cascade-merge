@@ -20591,9 +20591,6 @@ function saveState(name, value) {
   }
   issueCommand("save-state", { name }, toCommandValue(value));
 }
-function getState(name) {
-  return process.env[`STATE_${name}`] || "";
-}
 
 // node_modules/@actions/github/lib/context.js
 import { readFileSync, existsSync as existsSync2 } from "fs";
@@ -20676,14 +20673,6 @@ var __awaiter6 = function(thisArg, _arguments, P, generator) {
     step((generator = generator.apply(thisArg, _arguments || [])).next());
   });
 };
-function getAuthString(token, options) {
-  if (!token && !options.auth) {
-    throw new Error("Parameter token or opts.auth is required");
-  } else if (token && options.auth) {
-    throw new Error("Parameters token and opts.auth may not both be specified");
-  }
-  return typeof options.auth === "string" ? options.auth : `token ${token}`;
-}
 function getProxyAgent(destinationUrl) {
   const hc = new httpClient.HttpClient();
   return hc.getAgent(destinationUrl);
@@ -24204,106 +24193,87 @@ var defaults = {
   }
 };
 var GitHub = Octokit.plugin(restEndpointMethods, paginateRest).defaults(defaults);
-function getOctokitOptions(token, options) {
-  const opts = Object.assign({}, options || {});
-  const auth2 = getAuthString(token, opts);
-  if (auth2) {
-    opts.auth = auth2;
-  }
-  return opts;
-}
 
 // node_modules/@actions/github/lib/github.js
 var context2 = new Context();
-function getOctokit(token, options, ...additionalPlugins) {
-  const GitHubWithPlugins = GitHub.plugin(...additionalPlugins);
-  return new GitHubWithPlugins(getOctokitOptions(token, options));
-}
 
 // src/git.ts
 async function setupUser(name, email) {
   await exec("git", ["config", "user.name", name]);
   await exec("git", ["config", "user.email", email]);
 }
-async function fetch2(branch) {
-  await exec("git", ["fetch", "origin", branch]);
-}
-async function branchExistsRemote(branch) {
-  const exitCode = await exec(
-    "git",
-    ["ls-remote", "--exit-code", "--heads", "origin", branch],
-    { ignoreReturnCode: true }
-  );
-  return exitCode === 0;
+async function fetch2(branches) {
+  return 0 === await exec("git", ["fetch", "origin", ...branches.map((branch) => `+${branch}:origin/${branch}`)], { ignoreReturnCode: true });
 }
 async function checkout(branch) {
-  await exec("git", ["checkout", branch]);
+  return await execCmd(["checkout", branch]);
 }
 async function execCmd(args) {
   await exec("git", args);
 }
-async function merge2(ref, message) {
+async function mergeWithDefaultComment(ref) {
   try {
-    await exec("git", ["merge", "--no-edit", "-m", message, ref]);
+    return await execCmd(["merge", "--no-edit", ref]);
   } catch (e) {
     throw new Error(`Conflict merging ${ref}`, { cause: e });
   }
 }
-async function push(branch) {
-  await exec("git", ["push", "origin", branch]);
+async function merge2(ref, message) {
+  try {
+    return await execCmd(["merge", "--no-edit", "-m", message, ref]);
+  } catch (e) {
+    throw new Error(`Conflict merging ${ref}`, { cause: e });
+  }
 }
 
 // src/logic.ts
 var STATE_MERGE_TASKS = "MERGE_TASKS_JSON";
 async function runMain() {
-  const graphRaw = getInput("dependency_graph");
-  if (context2.eventName !== "workflow_run") {
-    info("This action only runs on workflow_run events. Skipping.");
+  const dependencies = parseGraph(getInput("dependency_graph"));
+  await setupUser(getInput("user_name"), getInput("user_email"));
+  const payload = context2.payload;
+  const workflow_run = payload.workflow_run;
+  if (!workflow_run) {
+    setFailed("This action can only run on workflow_run events. Refusing to merge unvalidated changes.");
     return;
   }
-  const payload = context2.payload;
-  const runConclusion = payload.workflow_run?.conclusion;
-  const headBranch = payload.workflow_run?.head_branch;
-  const headSha = payload.workflow_run?.head_sha;
+  const runConclusion = workflow_run.conclusion;
+  const headBranch = workflow_run.head_branch;
+  const headSha = workflow_run.head_sha;
   if (runConclusion !== "success") {
     info(
-      `Original workflow concluded with '${runConclusion}'. Skipping cascade.`
+      `Original workflow concluded with '${runConclusion}'. Skipping merges.`
     );
     return;
   }
-  const dependencies = parseGraph(graphRaw);
   const downstreams = dependencies.get(headBranch);
   if (!downstreams || downstreams.length === 0) {
     info(
-      `No downstream dependencies defined for branch '${headBranch}'. Skipping.`
+      `No downstream dependencies defined for branch '${headBranch}'.`
     );
     return;
   }
   info(
     `Processing cascade for ${headBranch} -> [${downstreams.join(", ")}]`
   );
-  await setupUser(getInput("user_name"), getInput("user_email"));
-  await fetch2(headBranch);
+  const toFetch = [headBranch, ...downstreams];
+  if (!await fetch2(toFetch)) {
+    setFailed("Some of configured branches are missing: " + toFetch.join(", "));
+    return;
+  }
   const successfulTasks = [];
   for (const downstream of downstreams) {
     const tempBranch = `merge/${headBranch}/${downstream}`;
     startGroup(`Preparing merge: ${tempBranch}`);
     try {
-      await fetch2(downstream);
-      await fetch2(tempBranch).catch(() => {
-      });
-      const tempExists = await branchExistsRemote(tempBranch);
-      if (tempExists) {
+      if (await fetch2([tempBranch])) {
         await checkout(tempBranch);
         await execCmd(["reset", "--hard", `origin/${tempBranch}`]);
       } else {
         await execCmd(["checkout", "-b", tempBranch, `origin/${downstream}`]);
       }
-      await merge2(
-        headSha,
-        `Merge upstream commit ${headSha} into ${tempBranch}`
-      );
-      await merge2(`origin/${downstream}`, `Sync with ${downstream}`);
+      await mergeWithDefaultComment(`origin/${downstream}`);
+      await merge2(headSha, `Merge branch ${headBranch} into ${downstream}`);
       successfulTasks.push({
         upstream: headBranch,
         downstream,
@@ -24322,53 +24292,6 @@ async function runMain() {
   }
   saveState(STATE_MERGE_TASKS, JSON.stringify(successfulTasks));
 }
-async function runPost() {
-  const tasksJson = getState(STATE_MERGE_TASKS);
-  if (!tasksJson) return;
-  const tasks = JSON.parse(tasksJson);
-  const token = getInput("token");
-  const octokit = getOctokit(token);
-  const repo = context2.repo;
-  info("Length: " + token.length);
-  for (const task of tasks) {
-    startGroup(`Finalizing: ${task.tempBranch}`);
-    try {
-      await checkout(task.tempBranch);
-      let prefix = context2.serverUrl.replace("https://", "https://" + token + "@");
-      await execCmd(["remote", "set-url", "origin", prefix + "/" + context2.repo.owner + "/" + context2.repo.repo + "/"]);
-      await push(task.tempBranch);
-      const { data: existingPrs } = await octokit.rest.pulls.list({
-        ...repo,
-        head: `${repo.owner}:${task.tempBranch}`,
-        base: task.downstream,
-        state: "open"
-      });
-      if (existingPrs.length === 0) {
-        const title = `Cascade Merge: ${task.upstream} to ${task.downstream}`;
-        const body = `Automated cascade merge triggered by workflow run on ${task.upstream}.
-
-Source Commit: ${task.originalSha}`;
-        await octokit.rest.pulls.create({
-          ...repo,
-          title,
-          body,
-          head: task.tempBranch,
-          base: task.downstream
-        });
-        info(`\u2705 PR Created for ${task.downstream}`);
-      } else {
-        info(`PR already exists for ${task.downstream}`);
-      }
-    } catch (e) {
-      setFailed(
-        `Failed post-action for ${task.tempBranch}: ${e instanceof Error ? e.message : "" + e}`
-      );
-      throw e;
-    } finally {
-      endGroup();
-    }
-  }
-}
 function parseGraph(input) {
   const map = /* @__PURE__ */ new Map();
   const lines = input.split(/[\r\n]+/);
@@ -24384,26 +24307,7 @@ function parseGraph(input) {
 }
 
 // src/main.ts
-var STATE_KEY_IS_POST = "IS_POST_PROCESS";
-async function run() {
-  try {
-    const isPost = getState(STATE_KEY_IS_POST);
-    if (!isPost) {
-      saveState(STATE_KEY_IS_POST, "true");
-      await runMain();
-    } else {
-      await runPost();
-    }
-  } catch (error2) {
-    if (error2 instanceof Error) {
-      setFailed(error2.message);
-    } else {
-      setFailed("Unknown error: " + error2);
-      throw error2;
-    }
-  }
-}
-run();
+runMain();
 /*! Bundled license information:
 
 undici/lib/web/fetch/body.js:
