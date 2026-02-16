@@ -21,7 +21,7 @@ jobs:
 
       # Step 1: Execute the Merge Action (Main Phase)
       # This creates local branches merge/release/1.0/release/1.1 etc.
-      - name: Calculate and Merge
+      - name: Merge upstream to downstreams in temporary branches
         id: cascade
         uses: ./path/to/action # or owner/repo@v1
         with:

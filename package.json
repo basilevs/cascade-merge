@@ -30,6 +30,7 @@
     "@actions/github": "^9.0.0"
   },
   "devDependencies": {
+    "@types/node": "^25.2.3",
     "esbuild": "^0.27.3",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",

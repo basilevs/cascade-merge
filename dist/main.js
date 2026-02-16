@@ -24305,7 +24305,7 @@ async function runMain() {
       endGroup();
     }
   }
-  setOutput("target_branches", downstreams.join("\n"));
+  setOutput("target_branches_list", downstreams.join("\n"));
   saveState(STATE_MERGE_TASKS, JSON.stringify(successfulTasks));
 }
 function parseGraph(input) {
@@ -24317,6 +24317,13 @@ function parseGraph(input) {
     if (key && values) {
       const sources = values.trim().split(/\s+/);
       map.set(key.trim(), sources);
+    }
+  }
+  for (let l of [map.keys(), ...map.values()]) {
+    for (let i of l) {
+      if (i.startsWith("merge")) {
+        throw new Error(`Branches the dependency graph can't start with 'merge' prefix, but found: ${l}`);
+      }
     }
   }
   return map;

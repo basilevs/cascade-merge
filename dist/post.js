@@ -3549,7 +3549,7 @@ var require_data_url = __commonJS({
 var require_webidl = __commonJS({
   "node_modules/undici/lib/web/fetch/webidl.js"(exports, module) {
     "use strict";
-    var { types, inspect } = __require("node:util");
+    var { types, inspect: inspect2 } = __require("node:util");
     var { markAsUncloneable } = __require("node:worker_threads");
     var { toUSVString } = require_util();
     var webidl = {};
@@ -3696,7 +3696,7 @@ var require_webidl = __commonJS({
         case "Symbol":
           return `Symbol(${V.description})`;
         case "Object":
-          return inspect(V);
+          return inspect2(V);
         case "String":
           return `"${V}"`;
         default:
@@ -19398,6 +19398,19 @@ function toCommandValue(input) {
   }
   return JSON.stringify(input);
 }
+function toCommandProperties(annotationProperties) {
+  if (!Object.keys(annotationProperties).length) {
+    return {};
+  }
+  return {
+    title: annotationProperties.title,
+    file: annotationProperties.file,
+    line: annotationProperties.startLine,
+    endLine: annotationProperties.endLine,
+    col: annotationProperties.startColumn,
+    endColumn: annotationProperties.endColumn
+  };
+}
 
 // node_modules/@actions/core/lib/command.js
 function issueCommand(command, properties, message) {
@@ -20526,6 +20539,9 @@ function getInput(name, options) {
     return val;
   }
   return val.trim();
+}
+function warning(message, properties = {}) {
+  issueCommand("warning", toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 function info(message) {
   process.stdout.write(message + os4.EOL);
@@ -24165,6 +24181,9 @@ function getOctokit(token, options, ...additionalPlugins) {
   return new GitHubWithPlugins(getOctokitOptions(token, options));
 }
 
+// src/logic.ts
+import { inspect } from "util";
+
 // src/git.ts
 async function checkout(branch) {
   return await execCmd(["checkout", branch]);
@@ -24212,14 +24231,21 @@ async function runPost() {
 
 _Generated automatically by the [Cascade Merge Action](https://github.com/basilevs/cascade-merge)._
             `.trim();
-      const created = await octokit.rest.pulls.create({
-        ...repo,
-        title,
-        body,
-        head: task.tempBranch,
-        base: task.downstream
-      });
-      info(`\u2705 Created [${title}](${created.data.html_url})`);
+      try {
+        const created = await octokit.rest.pulls.create({
+          ...repo,
+          title,
+          body,
+          head: task.tempBranch,
+          base: task.downstream
+        });
+        info(`\u2705 Created [${title}](${created.data.html_url})`);
+      } catch (e) {
+        if (e instanceof Error) {
+          warning(`Unable to create a pull request from ${task.tempBranch}: ` + inspect(e, { depth: null, colors: true }));
+        }
+        throw e;
+      }
     } finally {
       endGroup();
     }

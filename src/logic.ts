@@ -1,5 +1,6 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
+import { inspect } from 'util';
 import {
     merge,
     fetch,
@@ -180,15 +181,21 @@ _Generated automatically by the [Cascade Merge Action](https://github.com/basile
             `.trim();
 
             // Create the PR
-            const created = await octokit.rest.pulls.create({
-                ...repo,
-                title,
-                body,
-                head: task.tempBranch,
-                base: task.downstream
-            });
-            core.info(`✅ Created [${title}](${created.data.html_url})`);
-
+            try {
+                const created = await octokit.rest.pulls.create({
+                    ...repo,
+                    title,
+                    body,
+                    head: task.tempBranch,
+                    base: task.downstream
+                });
+                core.info(`✅ Created [${title}](${created.data.html_url})`);
+            } catch (e) {
+                if (e instanceof Error) {
+                    core.warning(`Unable to create a pull request from ${task.tempBranch}: ` + inspect(e, { depth: null, colors: true }));
+                }
+                throw e;
+            }
         } finally {
             core.endGroup();
         }
