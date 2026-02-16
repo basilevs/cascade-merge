@@ -24264,6 +24264,12 @@ async function runMain() {
     );
     return;
   }
+  if (!isValidBranchName(headBranch)) {
+    notice(
+      `Efemeral branch '${headBranch}' is subject to manual merge. Skipping.`
+    );
+    return;
+  }
   const downstreams = dependencies.get(headBranch);
   if (!downstreams || downstreams.length === 0) {
     notice(
@@ -24311,9 +24317,12 @@ async function runMain() {
   setOutput("target_branches_list", downstreams.join("\n"));
   saveState(STATE_MERGE_TASKS, JSON.stringify(successfulTasks));
 }
-function validateBranchName(branch) {
-  const invalidPrefix = "merge/";
-  if (branch.startsWith(invalidPrefix)) {
+var invalidPrefix = "merge/";
+function isValidBranchName(branch) {
+  return !branch.startsWith(invalidPrefix);
+}
+function checkBranchName(branch) {
+  if (!isValidBranchName(branch)) {
     throw new Error(`Invalid branch name '${branch}'. Graph branches cannot start with '${invalidPrefix}'.`);
   }
 }
@@ -24330,8 +24339,8 @@ function parseGraph(input) {
     }
   }
   for (const [upstream, downstreams] of map) {
-    validateBranchName(upstream);
-    downstreams.forEach(validateBranchName);
+    checkBranchName(upstream);
+    downstreams.forEach(checkBranchName);
   }
   return map;
 }

@@ -54,6 +54,13 @@ export async function runMain(): Promise<void> {
         return;
     }
 
+    if (!isValidBranchName(headBranch)) {
+        core.notice(
+            `Efemeral branch '${headBranch}' is subject to manual merge. Skipping.`
+        );
+        return;
+    }
+
     const downstreams = dependencies.get(headBranch);
     if (!downstreams || downstreams.length === 0) {
         core.notice(
@@ -204,9 +211,14 @@ _Generated automatically by the [Cascade Merge Action](https://github.com/basile
     }
 }
 
-function validateBranchName(branch: string) {
-    const invalidPrefix = 'merge/';
-    if (branch.startsWith(invalidPrefix)) {
+const invalidPrefix = 'merge/';
+
+function isValidBranchName(branch: string): boolean {
+    return !branch.startsWith(invalidPrefix);
+}
+
+function checkBranchName(branch: string) {
+    if (!isValidBranchName(branch)) {
         throw new Error(`Invalid branch name '${branch}'. Graph branches cannot start with '${invalidPrefix}'.`);
     }
 }
@@ -227,8 +239,8 @@ function parseGraph(input: string): Map<string, string[]> {
     }
 
     for (const [upstream, downstreams] of map) {
-        validateBranchName(upstream);
-        downstreams.forEach(validateBranchName);
+        checkBranchName(upstream);
+        downstreams.forEach(checkBranchName);
     }
     
     return map;
