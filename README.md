@@ -27,9 +27,10 @@ jobs:
         with:
           token: ${{ secrets.PAT_TOKEN }} # Used to create a PR, optional
           dependency_graph: |
-            release/1.0: release/1.1 experiment4   # supports # comments
+            release/1.0: release/1.1 experiment4   # supports # comments, multiple spaces are ignored
             release/1.1: release/1.2               # one origin per line
-            release/1.9: release/2.0 feature11     # origin: dependent branches 
+            release/1.9: release/2.0.              # origin: dependent branches 
+            release/2.0: feature/1 feature/2       # multiple dependent branches per line
 
       # Customize to prevent automatic merges of release-dependent changes
       - name: Reject unwanted changes
