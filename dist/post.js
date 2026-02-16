@@ -24218,7 +24218,7 @@ _Generated automatically by the [Cascade Merge Action](https://github.com/basile
         head: task.tempBranch,
         base: task.downstream
       });
-      info(`\u2705 Created [Pull Request ${created.data.id}](${created.url}) for ${task.downstream}`);
+      info(`\u2705 Created [${title}](${created.data.html_url})`);
     } finally {
       endGroup();
     }
