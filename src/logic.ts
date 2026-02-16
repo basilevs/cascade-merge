@@ -87,12 +87,12 @@ export async function runMain(): Promise<void> {
                 await execCmd(["checkout", "-b", tempBranch, `origin/${downstream}`]);
             }
 
-            // Merge the latest Downstream (Syncing)
+            // Merge the latest Downstream
             // This ensures we are up to date with target before pushing
+            // Prevents accumulation of conlicts in the temporary branch by failing early
             await mergeWithDefaultComment(`origin/${downstream}`);
 
-            // Merge the specific Upstream SHA (The build artifact)
-            // We assume strict merge requirements (fail on conflict)
+            // Merge the upstream state verified by original workflow
             await merge(headSha, `Merge branch ${headBranch} into ${downstream}`);
 
             successfulTasks.push({
@@ -114,7 +114,7 @@ export async function runMain(): Promise<void> {
         }
     }
 
-    core.setOutput('target_branches', downstreams.join('\n'));
+    core.setOutput('target_branches_list', downstreams.join('\n'));
   
     // Save state for Post step
     core.saveState(STATE_MERGE_TASKS, JSON.stringify(successfulTasks));
@@ -205,6 +205,13 @@ function parseGraph(input: string): Map<string, string[]> {
         if (key && values) {
             const sources = values.trim().split(/\s+/);
             map.set(key.trim(), sources);
+        }
+    }
+    for (let l of [map.keys(), ...map.values()]) {
+        for (let i of l) {
+            if (i.startsWith('merge')) {
+                throw new Error(`Branches the dependency graph can't start with 'merge' prefix, but found: ${l}`);
+            }
         }
     }
     return map;

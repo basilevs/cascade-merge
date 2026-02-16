@@ -15,7 +15,7 @@ inputs:
     description: "Git email for commits"
     default: "41898282+github-actions[bot]@users.noreply.github.com"
 outputs:
-  target_branches:
+  target_branches_list:
     description: 'Newline-separated list of downstream branches (e.g., release/1.1\nrelease/1.2).'
 runs:
   using: "node20"

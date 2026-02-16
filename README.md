@@ -35,15 +35,11 @@ jobs:
       # NOTE: If you have multiple downstreams, this script must be smart enough
       # to switch between the branches created by the step above.
 
-      - name: Reject version bumps (example)
-        if: steps.cascade.outputs.target_branches != ''
+      - name: Reject version bumps
+        if: steps.cascade.outputs.target_branches_list != ''
         run: |
-          echo "${{ steps.cascade.outputs.target_branches }}" | while read -r downstream; do
-            # Skip empty lines if any
-            [ -z "$downstream" ] && continue
-            
-            # Example: Do not merge version bumps automatically
-            git checkout -f "origin/$downstream"
+          echo "${{ steps.cascade.outputs.target_branches_list }}" | while read -r downstream; do
+            # Consider a change to pom.xml to be a version bump and reject the merge
             git diff --name-only --merge-base "origin/$downstream" "${{ github.event.workflow_run.head_sha }}" | grep pom.xml$ && exit 2 || true
           done
 
