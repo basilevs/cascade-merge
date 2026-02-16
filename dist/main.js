@@ -9460,18 +9460,18 @@ var require_util3 = __commonJS({
       }
       const stackTraceLimit = Error.stackTraceLimit;
       Error.stackTraceLimit = 0;
-      let payload;
+      let payload2;
       try {
         if (isContentTypeApplicationJson(contentType)) {
-          payload = JSON.parse(chunksDecode(chunks, length));
+          payload2 = JSON.parse(chunksDecode(chunks, length));
         } else if (isContentTypeText(contentType)) {
-          payload = chunksDecode(chunks, length);
+          payload2 = chunksDecode(chunks, length);
         }
       } catch {
       } finally {
         Error.stackTraceLimit = stackTraceLimit;
       }
-      queueMicrotask(() => callback(new ResponseStatusCodeError(message, statusCode, headers, payload)));
+      queueMicrotask(() => callback(new ResponseStatusCodeError(message, statusCode, headers, payload2)));
     }
     var isContentTypeApplicationJson = (contentType) => {
       return contentType.length > 15 && contentType[11] === "/" && contentType[0] === "a" && contentType[1] === "p" && contentType[2] === "p" && contentType[3] === "l" && contentType[4] === "i" && contentType[5] === "c" && contentType[6] === "a" && contentType[7] === "t" && contentType[8] === "i" && contentType[9] === "o" && contentType[10] === "n" && contentType[12] === "j" && contentType[13] === "s" && contentType[14] === "o" && contentType[15] === "n";
@@ -20625,8 +20625,8 @@ var Context = class {
     this.graphqlUrl = (_c = process.env.GITHUB_GRAPHQL_URL) !== null && _c !== void 0 ? _c : `https://api.github.com/graphql`;
   }
   get issue() {
-    const payload = this.payload;
-    return Object.assign(Object.assign({}, this.repo), { number: (payload.issue || payload.pull_request || payload).number });
+    const payload2 = this.payload;
+    return Object.assign(Object.assign({}, this.repo), { number: (payload2.issue || payload2.pull_request || payload2).number });
   }
   get repo() {
     if (process.env.GITHUB_REPOSITORY) {
@@ -24228,18 +24228,14 @@ async function merge2(ref, message) {
 
 // src/logic.ts
 var STATE_MERGE_TASKS = "MERGE_TASKS_JSON";
+var payload = context2.payload;
 async function runMain() {
   const dependencies = parseGraph(getInput("dependency_graph"));
   await setupUser(getInput("user_name"), getInput("user_email"));
-  const payload = context2.payload;
   const workflow_run = payload.workflow_run;
-  if (!workflow_run) {
-    setFailed("This action can only run on workflow_run events. Refusing to merge unvalidated changes.");
-    return;
-  }
-  const runConclusion = workflow_run.conclusion;
   const headBranch = workflow_run.head_branch;
   const headSha = workflow_run.head_sha;
+  const runConclusion = workflow_run.conclusion;
   if (runConclusion !== "success") {
     info(
       `Original workflow concluded with '${runConclusion}'. Skipping merges.`

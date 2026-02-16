@@ -20,21 +20,27 @@ interface MergeTask {
 // Key to store successful merges to be processed in Post
 const STATE_MERGE_TASKS = "MERGE_TASKS_JSON";
 
+const payload = github.context.payload;
+
+export async function runPre():  Promise<void> {
+    // Fail early on invalid configuration
+    if (!payload.workflow_run) {
+        core.setFailed("Cascade merge should only be done on workflow_run events. Refusing to merge unvalidated changes. Ensure workflow has on:workflow_run section.");
+        return;
+    }
+    parseGraph(core.getInput("dependency_graph")); // will throw on problems
+}
+
 export async function runMain(): Promise<void> {
-    // Configuration checks
     const dependencies = parseGraph(core.getInput("dependency_graph"));
     await setupUser(core.getInput("user_name"), core.getInput("user_email"));
 
     // Input checks
-    const payload = github.context.payload;
     const workflow_run = payload.workflow_run;
-    if (!workflow_run) {
-        core.setFailed("This action can only run on workflow_run events. Refusing to merge unvalidated changes.");
-        return;
-    }
-    const runConclusion = workflow_run.conclusion;
     const headBranch = workflow_run.head_branch;
     const headSha = workflow_run.head_sha;
+
+    const runConclusion = workflow_run.conclusion;
     if (runConclusion !== "success") {
         core.info(
             `Original workflow concluded with '${runConclusion}'. Skipping merges.`,
@@ -62,7 +68,6 @@ export async function runMain(): Promise<void> {
 
     const successfulTasks: MergeTask[] = [];
 
-    // 4. Process Downstreams
     for (const downstream of downstreams) {
         const tempBranch = `merge/${headBranch}/${downstream}`;
         core.startGroup(`Preparing merge: ${tempBranch}`);
@@ -117,7 +122,6 @@ export async function runPost(): Promise<void> {
     const token = core.getInput("token");
     const octokit = github.getOctokit(token);
     const repo = github.context.repo;
-    const payload = github.context.payload;
 
     for (const task of tasks) {
         core.startGroup(`Finalizing: ${task.tempBranch}`);
@@ -148,7 +152,8 @@ export async function runPost(): Promise<void> {
             });
 
             if (existingPrs.length !== 0) {
-                core.info(`PR already exists for ${task.downstream}`);
+                const pr = existingPrs[0];
+                core.info(`PR already exists: [${pr.title}](${pr.html_url})`);
                 continue;
             }
             // Get the URL of the "Original Workflow" (the one that triggered this cascade)
