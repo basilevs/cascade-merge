@@ -20,11 +20,11 @@ This action utilizes a **Main/Post** architecture to give you control over the m
 ```mermaid
 sequenceDiagram
     participant U as Upstream (release/1.0)
-    participant GH as GitHub Actions
+    participant GH as Verification Build
     participant A as Cascade Action
     participant D as Downstream (release/1.1)
 
-    U->>GH: Push & Build Success
+    U->>GH: Push
     GH->>A: Trigger (workflow_run)
     
     rect rgb(240, 248, 255)
