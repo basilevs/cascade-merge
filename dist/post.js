@@ -3549,7 +3549,7 @@ var require_data_url = __commonJS({
 var require_webidl = __commonJS({
   "node_modules/undici/lib/web/fetch/webidl.js"(exports, module) {
     "use strict";
-    var { types, inspect: inspect2 } = __require("node:util");
+    var { types, inspect } = __require("node:util");
     var { markAsUncloneable } = __require("node:worker_threads");
     var { toUSVString } = require_util();
     var webidl = {};
@@ -3696,7 +3696,7 @@ var require_webidl = __commonJS({
         case "Symbol":
           return `Symbol(${V.description})`;
         case "Object":
-          return inspect2(V);
+          return inspect(V);
         case "String":
           return `"${V}"`;
         default:
@@ -24181,9 +24181,6 @@ function getOctokit(token, options, ...additionalPlugins) {
   return new GitHubWithPlugins(getOctokitOptions(token, options));
 }
 
-// src/logic.ts
-import { inspect } from "util";
-
 // src/git.ts
 async function checkout(branch) {
   return await execCmd(["checkout", branch]);
@@ -24241,10 +24238,11 @@ _Generated automatically by the [Cascade Merge Action](https://github.com/basile
         });
         info(`\u2705 Created [${title}](${created.data.html_url})`);
       } catch (e) {
-        if (e instanceof Error) {
-          warning(`Unable to create a pull request from ${task.tempBranch}: ` + inspect(e, { depth: null, colors: true }));
+        if (e instanceof RequestError && e.status == 403) {
+          warning(`Not enough permissions to create a pull request. Add 'pull_request: write' permission to your token or job.`);
+        } else {
+          throw e;
         }
-        throw e;
       }
     } finally {
       endGroup();

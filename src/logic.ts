@@ -1,5 +1,6 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
+import { RequestError } from "@octokit/request-error"
 import { inspect } from 'util';
 import {
     merge,
@@ -191,10 +192,11 @@ _Generated automatically by the [Cascade Merge Action](https://github.com/basile
                 });
                 core.info(`✅ Created [${title}](${created.data.html_url})`);
             } catch (e) {
-                if (e instanceof Error) {
-                    core.warning(`Unable to create a pull request from ${task.tempBranch}: ` + inspect(e, { depth: null, colors: true }));
+                if (e instanceof RequestError && e.status == 403) {
+                    core.warning(`Not enough permissions to create a pull request. Add 'pull_request: write' permission to your token or job.`);
+                } else {
+                    throw e;
                 }
-                throw e;
             }
         } finally {
             core.endGroup();
