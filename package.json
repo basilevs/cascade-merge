@@ -6,7 +6,7 @@
   "type": "module",
   "main": "dist/main.js",
   "scripts": {
-    "build": "esbuild src/{pre,main,post}.ts --bundle --platform=node --format=esm --main-fields=module,main --target=node20 --outdir=dist/ --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\"",
+    "build": "esbuild src/{main,post}.ts --bundle --platform=node --format=esm --main-fields=module,main --target=node20 --outdir=dist/ --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --no-error-on-unmatched-pattern --write \"**/*.{ts,yml,yaml}\"",
     "format-check": "prettier --no-error-on-unmatched-pattern --check \"**/*.{ts,yml,yaml,json}\"",

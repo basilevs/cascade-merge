@@ -19,7 +19,6 @@ outputs:
     description: 'Newline-separated list of downstream branches (e.g., release/1.1\nrelease/1.2).'
 runs:
   using: "node20"
-  pre: "dist/pre.js"
   main: "dist/main.js"
   post: "dist/post.js"
   post-if: success()

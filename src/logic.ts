@@ -22,16 +22,20 @@ const STATE_MERGE_TASKS = "MERGE_TASKS_JSON";
 
 const payload = github.context.payload;
 
-export async function runPre():  Promise<void> {
+export async function runPre():  Promise<boolean> {
     // Fail early on invalid configuration
     if (!payload.workflow_run) {
         core.setFailed("Cascade merge should only be done on workflow_run events. Refusing to merge unvalidated changes. Ensure workflow has on:workflow_run section.");
-        return;
+        return false;
     }
     parseGraph(core.getInput("dependency_graph")); // will throw on problems
+    return true;
 }
 
 export async function runMain(): Promise<void> {
+    if (!await runPre()) { // Can't use real pre step in action.yml, because it makes post-step execute after actions/checkout's. Checkout action does not have pre step.
+        return;
+    }
     const dependencies = parseGraph(core.getInput("dependency_graph"));
     await setupUser(core.getInput("user_name"), core.getInput("user_email"));
 

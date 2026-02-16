@@ -43,7 +43,7 @@ jobs:
             [ -z "$downstream" ] && continue
             
             # Example: Do not merge version bumps automatically
-            git checkout -f "origin/$branch"
+            git checkout -f "origin/$downstream"
             git diff --name-only --merge-base "origin/$downstream" "${{ github.event.workflow_run.head_sha }}" | grep pom.xml$ && exit 2 || true
           done
 

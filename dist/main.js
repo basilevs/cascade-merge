@@ -24237,7 +24237,18 @@ async function merge2(ref, message) {
 // src/logic.ts
 var STATE_MERGE_TASKS = "MERGE_TASKS_JSON";
 var payload = context2.payload;
+async function runPre() {
+  if (!payload.workflow_run) {
+    setFailed("Cascade merge should only be done on workflow_run events. Refusing to merge unvalidated changes. Ensure workflow has on:workflow_run section.");
+    return false;
+  }
+  parseGraph(getInput("dependency_graph"));
+  return true;
+}
 async function runMain() {
+  if (!await runPre()) {
+    return;
+  }
   const dependencies = parseGraph(getInput("dependency_graph"));
   await setupUser(getInput("user_name"), getInput("user_email"));
   const workflow_run = payload.workflow_run;
