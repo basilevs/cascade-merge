@@ -36,8 +36,8 @@ sequenceDiagram
     
     rect rgb(255, 245, 230)
         note right of A: Your Workflow Steps
-        GH->>GH: Run Intermediate Scripts
-        note right of GH: e.g. "Verify Merge",<br/>"Revert pom.xml"
+        A->>A: Run Intermediate Scripts
+        note right of A: e.g. "Verify Merge",<br/>"Revert pom.xml"
     end
     
     rect rgb(240, 255, 240)
