@@ -10,7 +10,7 @@ export async function fetch(branches: string[]): Promise<boolean> {
   // Using unshallow if needed is safer but slower.
   // Here we assume standard fetch of specific branch.
 
-  return 0 === await exec.exec("git", ["fetch", "origin", ...branches.map(branch =>  `+${branch}:refs/remotes/origin/${branch}`)], { ignoreReturnCode: true });
+  return 0 === await exec.exec("git", ["fetch", "--depth=2147483647", "origin", ...branches.map(branch =>  `+${branch}:refs/remotes/origin/${branch}`)], { ignoreReturnCode: true });
 }
 
 export async function branchExists(branch: string): Promise<boolean> {

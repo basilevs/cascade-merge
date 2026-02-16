@@ -6,7 +6,8 @@ on:
   workflow_run:  # The only compatible trigger. A dedicated workflow is recommended.
     workflows: ["Verify branch"] # A workflow that verifies your maintenance branches
     types: [completed] # The only compatible status
-    # branches: [release/1.0, release/1.1, release/1.9] # To reduce worfklow report noise, enumerate all origin branches from dependency_graph below. Optional, action will do nothing if branch is not represented in dependency_graph.
+    branches-ignore: ["merge/**"] # these are created by the action and have to be manually merged
+    # branches: [release/1.0, release/1.1, release/1.9] # To reduce worfklow report noise, enumerate all origin branches from dependency_graph below. Optional, action will do nothing if branch is not represented in dependency_graph. Conflicts with branches-ignore. 
 
 jobs:
   cascade:
@@ -18,7 +19,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT_TOKEN }} # To trigger downstream workflows after push
-          fetch-depth: 0 # Important for correct merges
 
       # This creates local branches merge/release/1.0/release/1.1 etc.
       - name: Merge upstream to downstreams in temporary branches

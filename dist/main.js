@@ -24214,7 +24214,7 @@ async function setupUser(name, email) {
   await exec("git", ["config", "user.email", email]);
 }
 async function fetch2(branches) {
-  return 0 === await exec("git", ["fetch", "origin", ...branches.map((branch) => `+${branch}:refs/remotes/origin/${branch}`)], { ignoreReturnCode: true });
+  return 0 === await exec("git", ["fetch", "--depth=2147483647", "origin", ...branches.map((branch) => `+${branch}:refs/remotes/origin/${branch}`)], { ignoreReturnCode: true });
 }
 async function checkout(branch) {
   return await execCmd(["checkout", branch]);
