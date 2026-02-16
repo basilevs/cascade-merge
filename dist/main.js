@@ -20568,6 +20568,14 @@ function getInput(name, options) {
   }
   return val.trim();
 }
+function setOutput(name, value) {
+  const filePath = process.env["GITHUB_OUTPUT"] || "";
+  if (filePath) {
+    return issueFileCommand("OUTPUT", prepareKeyValueMessage(name, value));
+  }
+  process.stdout.write(os5.EOL);
+  issueCommand("set-output", { name }, toCommandValue(value));
+}
 function setFailed(message) {
   process.exitCode = ExitCode.Failure;
   error(message);
@@ -24286,6 +24294,7 @@ async function runMain() {
       endGroup();
     }
   }
+  setOutput("target_branches", downstreams.join("\n"));
   saveState(STATE_MERGE_TASKS, JSON.stringify(successfulTasks));
 }
 function parseGraph(input) {

@@ -13,7 +13,6 @@ jobs:
       pull-requests: write
       contents: write
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,23 +34,19 @@ jobs:
       # Step 2: Intermediate Actions (Filter unwanted changes)
       # NOTE: If you have multiple downstreams, this script must be smart enough
       # to switch between the branches created by the step above.
-      - name: Remove Version Bumps (Intermediate)
+
+      - name: Reject version bumps (example)
+        if: steps.cascade.outputs.target_branches != ''
         run: |
-          # The action sets the last processed branch as active.
-          # If we need to process ALL temp branches, we must loop manually.
-          # This example assumes the Action outputted the branches or we know logic.
-          
-          # Example Logic:
-          CURRENT_BRANCH=$(git branch --show-current)
-          if [[ "$CURRENT_BRANCH" == merge/* ]]; then
-             echo "Sanitizing $CURRENT_BRANCH..."
-             # Remove pom.xml changes if they exist in diff (simplified logic)
-             git checkout origin/$(echo $CURRENT_BRANCH | cut -d/ -f3) -- pom.xml || true
-             
-             # Commit cleanup if changed
-             git diff --quiet || git commit -am "Revert release management files"
-          fi
+          echo "${{ steps.cascade.outputs.target_branches }}" | while read -r downstream; do
+            # Skip empty lines if any
+            [ -z "$downstream" ] && continue
+            
+            # Example: Do not merge version bumps automatically
+            git checkout -f "origin/$branch"
+            git diff --name-only --merge-base "origin/$downstream" "${{ github.event.workflow_run.head_sha }}" | grep pom.xml$ && exit 2 || true
+          done
 
       # Step 3: The 'Post' phase of the cascade action runs automatically here.
-      # It will push the branches and create PRs.
+      # It will push the branches and create PRs if all steps above succeed.
 ```

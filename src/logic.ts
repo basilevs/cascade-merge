@@ -110,6 +110,8 @@ export async function runMain(): Promise<void> {
         }
     }
 
+    core.setOutput('target_branches', downstreams.join('\n'));
+  
     // Save state for Post step
     core.saveState(STATE_MERGE_TASKS, JSON.stringify(successfulTasks));
 }
