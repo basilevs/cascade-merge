@@ -56,8 +56,8 @@ export async function runMain(): Promise<void> {
 
     const downstreams = dependencies.get(headBranch);
     if (!downstreams || downstreams.length === 0) {
-        core.info(
-            `No downstream dependencies defined for branch '${headBranch}'.`,
+        core.notice(
+            `No downstream dependencies are defined for branch '${headBranch}'.`,
         );
         return;
     }
@@ -204,24 +204,32 @@ _Generated automatically by the [Cascade Merge Action](https://github.com/basile
     }
 }
 
+function validateBranchName(branch: string) {
+    const invalidPrefix = 'merge/';
+    if (branch.startsWith(invalidPrefix)) {
+        throw new Error(`Invalid branch name '${branch}'. Graph branches cannot start with '${invalidPrefix}'.`);
+    }
+}
+
 function parseGraph(input: string): Map<string, string[]> {
     const map = new Map<string, string[]>();
     const lines = input.split(/[\r\n]+/);
 
     for (const line of lines) {
-        if (!line.trim() || line.startsWith("#")) continue;
-        const [key, values] = line.split(":");
+        const content = line.split('#')[0].trim();
+        if (!content) continue;
+        const [key, values] = content.split(":");
+        
         if (key && values) {
             const sources = values.trim().split(/\s+/);
             map.set(key.trim(), sources);
         }
     }
-    for (let l of [map.keys(), ...map.values()]) {
-        for (let i of l) {
-            if (i.startsWith('merge')) {
-                throw new Error(`Branches the dependency graph can't start with 'merge' prefix, but found: ${l}`);
-            }
-        }
+
+    for (const [upstream, downstreams] of map) {
+        validateBranchName(upstream);
+        downstreams.forEach(validateBranchName);
     }
+    
     return map;
 }
