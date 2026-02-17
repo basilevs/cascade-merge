@@ -7,6 +7,7 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "esbuild src/{main,post}.ts --bundle --platform=node --format=esm --main-fields=module,main --target=node20 --outdir=dist/ --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\"",
+    "zip": "zip -r cascade-merge . -x node_modules/\\* package-lock.json dist/\\* .git/\\*",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --no-error-on-unmatched-pattern --write \"**/*.{ts,yml,yaml}\"",
     "format-check": "prettier --no-error-on-unmatched-pattern --check \"**/*.{ts,yml,yaml,json}\"",

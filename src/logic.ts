@@ -234,7 +234,12 @@ function parseGraph(input: string): Map<string, string[]> {
         
         if (key && values) {
             const sources = values.trim().split(/\s+/);
-            map.set(key.trim(), sources);
+            const existing = map.get(key.trim());
+            if (existing) {
+                existing.push(...sources);
+            } else {
+                map.set(key.trim(), sources);
+            }
         }
     }
 
