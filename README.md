@@ -40,7 +40,7 @@ sequenceDiagram
     rect rgb(255, 245, 230)
         note right of A: Your Workflow Steps
         A->>A: Run Intermediate Scripts on Local Branches
-        note right of A: e.g. "Verify Merge",<br/>"Revert pom.xml"
+        A->>A: If necessary, reject changes by failing a step
     end
     
     rect rgb(240, 255, 240)
@@ -48,9 +48,9 @@ sequenceDiagram
         A->>A: Push Temp Branch, Create/Update PR
     end
     A-)GH: on: pull_request
-    
-    C->>C: Resolve conflicts in the temporary branch
-    C->>C: Manually verify changes and artifacts
+
+    A->>C: Fetch Temporary Branch, resolve conflicts
+    C->>C: Verify changes and artifacts
     C->>D: Merge PR
     D-)GH: on: push
 ```
