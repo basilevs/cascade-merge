@@ -8,6 +8,7 @@ import {
     push,
     execCmd,
     checkout,
+    isAncestor,
     setupUser,
     mergeWithDefaultComment,
 } from "./git.js";
@@ -100,6 +101,12 @@ export async function runMain(): Promise<void> {
             // This ensures we are up to date with target before pushing
             // Prevents accumulation of conlicts in the temporary branch by failing early
             await mergeWithDefaultComment(`origin/${downstream}`);
+
+            // Check if already merged so that PR creation does not fail on empty merge
+            if (await isAncestor(headSha, 'HEAD')) {
+                core.info(`${headSha} is already merged into ${tempBranch} or ${downstream}.`);
+                continue;
+            }
 
             // Merge the upstream state verified by original workflow
             await merge(headSha, `Merge branch ${headBranch} into ${downstream}`);

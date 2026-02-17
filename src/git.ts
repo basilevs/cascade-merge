@@ -21,6 +21,14 @@ export async function branchExists(branch: string): Promise<boolean> {
   return exitCode === 0;
 }
 
+export async function isAncestor(upstream: string, downstream: string): Promise<boolean> {
+  const exitCode = await exec.exec(
+    "git", ['merge-base', '--is-ancestor', upstream, downstream],
+    { ignoreReturnCode: true },
+  );
+  return exitCode === 0;
+}
+
 export async function checkout(branch: string) {
   return await execCmd(["checkout", branch]);
 }

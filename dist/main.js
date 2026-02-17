@@ -24216,6 +24216,14 @@ async function setupUser(name, email) {
 async function fetch2(branches) {
   return 0 === await exec("git", ["fetch", "--depth=2147483647", "origin", ...branches.map((branch) => `+${branch}:refs/remotes/origin/${branch}`)], { ignoreReturnCode: true });
 }
+async function isAncestor(upstream, downstream) {
+  const exitCode = await exec(
+    "git",
+    ["merge-base", "--is-ancestor", upstream, downstream],
+    { ignoreReturnCode: true }
+  );
+  return exitCode === 0;
+}
 async function checkout(branch) {
   return await execCmd(["checkout", branch]);
 }
@@ -24297,6 +24305,10 @@ async function runMain() {
         await execCmd(["checkout", "-b", tempBranch, `origin/${downstream}`]);
       }
       await mergeWithDefaultComment(`origin/${downstream}`);
+      if (await isAncestor(headSha, "HEAD")) {
+        info(`${headSha} is already merged into ${tempBranch} or ${downstream}.`);
+        continue;
+      }
       await merge2(headSha, `Merge branch ${headBranch} into ${downstream}`);
       successfulTasks.push({
         upstream: headBranch,
@@ -24335,7 +24347,12 @@ function parseGraph(input) {
     const [key, values] = content.split(":");
     if (key && values) {
       const sources = values.trim().split(/\s+/);
-      map.set(key.trim(), sources);
+      const existing = map.get(key.trim());
+      if (existing) {
+        existing.push(...sources);
+      } else {
+        map.set(key.trim(), sources);
+      }
     }
   }
   for (const [upstream, downstreams] of map) {
