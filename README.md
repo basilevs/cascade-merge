@@ -19,33 +19,40 @@ This action utilizes a **Main/Post** architecture to give you control over the m
 
 ```mermaid
 sequenceDiagram
+    actor C as Committer
     participant U as Upstream (release/1.0)
-    participant GH as Verification Build
-    participant A as Cascade Action
+    participant GH as Verification Workflow
+    participant A as Cascade Merge Workflow
     participant D as Downstream (release/1.1)
 
-    U->>GH: Push
-    GH->>A: Trigger (workflow_run)
+    C->>U: Push
+    U-)GH: on: push
+    GH->>GH: Automated build, test and deploy
+    GH-)A: on: workflow_run
     
     rect rgb(240, 248, 255)
         note right of A: Main Phase
         A->>A: Calculate Dependencies
         A->>A: Fetch Branches
-        A->>A: Merge Upstream -> Temp Branch
+        A->>A: Merge Upstream -> Temp Local Branch
     end
     
     rect rgb(255, 245, 230)
         note right of A: Your Workflow Steps
-        A->>A: Run Intermediate Scripts
+        A->>A: Run Intermediate Scripts on Local Branches
         note right of A: e.g. "Verify Merge",<br/>"Revert pom.xml"
     end
     
     rect rgb(240, 255, 240)
         note right of A: Post Phase
-        A->>D: Push Temp Branch
-        A->>D: Create/Update PR
+        A->>A: Push Temp Branch, Create/Update PR
     end
-
+    A-)GH: on: pull_request
+    
+    C->>C: Resolve conflicts in the temporary branch
+    C->>C: Manually verify changes and artifacts
+    C->>D: Merge PR
+    D-)GH: on: push
 ```
 
 **Note:** All merges are performed in temporary branches (e.g., `merge/release/1.0/release/1.1`). This ensures your actual protected branches are never touched directly. You maintain full control via the generated Pull Requests.
