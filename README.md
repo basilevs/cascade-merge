@@ -31,10 +31,9 @@ sequenceDiagram
     GH-)A: on: workflow_run
     
     rect rgb(240, 248, 255)
-        note right of A: Main Phase
-        A->>A: Calculate Dependencies
-        A->>A: Fetch Branches
-        A->>A: Merge Upstream -> Temp Local Branch
+        A->>A: Create or fetch Temporary Branch
+        D->>A: Merge Downstream
+        U->>A: Merge Upstream Commit that started Verification Workflow
     end
     
     rect rgb(255, 245, 230)
@@ -49,8 +48,7 @@ sequenceDiagram
     end
     A-)GH: on: pull_request
 
-    A->>C: Fetch Temporary Branch, resolve conflicts
-    C->>C: Verify changes and artifacts
+    GH->>C: Verify PR build, resolve conflicts
     C->>D: Merge PR
     D-)GH: on: push
 ```
