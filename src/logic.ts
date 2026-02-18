@@ -92,15 +92,14 @@ export async function runMain(): Promise<void> {
                 await checkout(tempBranch);
                 // Reset to match remote exactly to avoid local divergence
                 await execCmd(["reset", "--hard", `origin/${tempBranch}`]);
+                // Merge the latest Downstream
+                // This ensures we are up to date with target before pushing
+                // Prevents accumulation of conlicts in the temporary branch by failing early
+                await mergeWithDefaultComment(`origin/${downstream}`);
             } else {
                 // If new, start from downstream
                 await execCmd(["checkout", "-b", tempBranch, `origin/${downstream}`]);
             }
-
-            // Merge the latest Downstream
-            // This ensures we are up to date with target before pushing
-            // Prevents accumulation of conlicts in the temporary branch by failing early
-            await mergeWithDefaultComment(`origin/${downstream}`);
 
             // Check if already merged so that PR creation does not fail on empty merge
             if (await isAncestor(headSha, 'HEAD')) {
@@ -131,7 +130,7 @@ export async function runMain(): Promise<void> {
     }
 
     core.setOutput('target_branches_list', downstreams.join('\n'));
-    core.setOutput('merge_branches_list', successfulTasks.map(t => t.tempBranch) );    
+    core.setOutput('merge_branches_list', successfulTasks.map(t => t.tempBranch) );
   
     // Save state for Post step
     core.saveState(STATE_MERGE_TASKS, JSON.stringify(successfulTasks));

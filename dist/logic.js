@@ -24330,10 +24330,10 @@ async function runMain() {
       if (await fetch2([tempBranch])) {
         await checkout(tempBranch);
         await execCmd(["reset", "--hard", `origin/${tempBranch}`]);
+        await mergeWithDefaultComment(`origin/${downstream}`);
       } else {
         await execCmd(["checkout", "-b", tempBranch, `origin/${downstream}`]);
       }
-      await mergeWithDefaultComment(`origin/${downstream}`);
       if (await isAncestor(headSha, "HEAD")) {
         info(`${headSha} is already merged into ${tempBranch} or ${downstream}.`);
         continue;
