@@ -83,7 +83,7 @@ export async function runMain(): Promise<void> {
     const successfulTasks: MergeTask[] = [];
 
     for (const downstream of downstreams) {
-        const tempBranch = `merge/${headBranch}/${downstream}`;
+        const tempBranch = mergeBranchName(headBranch, downstream);
         core.startGroup(`Preparing merge: ${tempBranch}`);
 
         try {
@@ -131,6 +131,7 @@ export async function runMain(): Promise<void> {
     }
 
     core.setOutput('target_branches_list', downstreams.join('\n'));
+    core.setOutput('merge_branches_list', successfulTasks.map(t => t.tempBranch) );    
   
     // Save state for Post step
     core.saveState(STATE_MERGE_TASKS, JSON.stringify(successfulTasks));
@@ -216,6 +217,10 @@ _Generated automatically by the [Cascade Merge Action](https://github.com/basile
             core.endGroup();
         }
     }
+}
+
+function mergeBranchName(upstream: string, downstream: string): string {
+    return `merge/${upstream}/${downstream}`;
 }
 
 const invalidPrefix = 'merge/';

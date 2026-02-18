@@ -17,6 +17,8 @@ inputs:
 outputs:
   target_branches_list:
     description: 'Newline-separated list of downstream branches (e.g., release/1.1\nrelease/1.2).'
+  merge_branches_list:
+    description: 'Newline-separated list of temporary merge branches (e.g., origin/merge/release/0.1/release/0.2\norigin/merge/release/0.2/main).'
 runs:
   using: "node20"
   main: "dist/main.js"

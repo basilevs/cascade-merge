@@ -24324,7 +24324,7 @@ async function runMain() {
   }
   const successfulTasks = [];
   for (const downstream of downstreams) {
-    const tempBranch = `merge/${headBranch}/${downstream}`;
+    const tempBranch = mergeBranchName(headBranch, downstream);
     startGroup(`Preparing merge: ${tempBranch}`);
     try {
       if (await fetch2([tempBranch])) {
@@ -24356,6 +24356,7 @@ async function runMain() {
     }
   }
   setOutput("target_branches_list", downstreams.join("\n"));
+  setOutput("merge_branches_list", successfulTasks.map((t) => t.tempBranch));
   saveState(STATE_MERGE_TASKS, JSON.stringify(successfulTasks));
 }
 async function runPost() {
@@ -24411,6 +24412,9 @@ _Generated automatically by the [Cascade Merge Action](https://github.com/basile
       endGroup();
     }
   }
+}
+function mergeBranchName(upstream, downstream) {
+  return `merge/${upstream}/${downstream}`;
 }
 var invalidPrefix = "merge/";
 function isValidBranchName(branch) {
