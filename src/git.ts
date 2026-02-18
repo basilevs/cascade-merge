@@ -10,20 +10,37 @@ export async function fetch(branches: string[]): Promise<boolean> {
   // Using unshallow if needed is safer but slower.
   // Here we assume standard fetch of specific branch.
 
-  return 0 === await exec.exec("git", ["fetch", "--depth=2147483647", "origin", ...branches.map(branch =>  `+${branch}:refs/remotes/origin/${branch}`)], { ignoreReturnCode: true });
+  return (
+    0 ===
+    (await exec.exec(
+      "git",
+      [
+        "fetch",
+        "--depth=2147483647",
+        "origin",
+        ...branches.map((branch) => `+${branch}:refs/remotes/origin/${branch}`),
+      ],
+      { ignoreReturnCode: true },
+    ))
+  );
 }
 
 export async function branchExists(branch: string): Promise<boolean> {
   const exitCode = await exec.exec(
-    "git", ['rev-parse', '--verify', '--quiet', branch],
+    "git",
+    ["rev-parse", "--verify", "--quiet", branch],
     { ignoreReturnCode: true },
   );
   return exitCode === 0;
 }
 
-export async function isAncestor(upstream: string, downstream: string): Promise<boolean> {
+export async function isAncestor(
+  upstream: string,
+  downstream: string,
+): Promise<boolean> {
   const exitCode = await exec.exec(
-    "git", ['merge-base', '--is-ancestor', upstream, downstream],
+    "git",
+    ["merge-base", "--is-ancestor", upstream, downstream],
     { ignoreReturnCode: true },
   );
   return exitCode === 0;
