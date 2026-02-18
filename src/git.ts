@@ -17,6 +17,7 @@ export async function fetch(branches: string[]): Promise<boolean> {
       [
         "fetch",
         "--depth=2147483647",
+        "--no-tags",
         "origin",
         ...branches.map((branch) => `+${branch}:refs/remotes/origin/${branch}`),
       ],
