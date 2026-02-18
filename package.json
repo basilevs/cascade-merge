@@ -6,8 +6,7 @@
   "type": "module",
   "main": "dist/main.js",
   "scripts": {
-    "customEsbuild": "esbuild --platform=node --format=esm --main-fields=module,main --target=node20 --outdir=dist/ --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\"",
-    "build": "rm dist/*.js ; npm run customEsbuild -- src/logic.ts --bundle  && npm run customEsbuild src/{main,post}.ts",
+    "build": "node build.mjs",
     "zip": "zip -r cascade-merge . -x node_modules/\\* package-lock.json dist/\\* .git/\\*",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --no-error-on-unmatched-pattern --write \"**/*.{ts,yml,yaml}\"",
