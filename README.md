@@ -8,7 +8,7 @@ maintaining multiple versions of software often requires "cascading" changes: a 
 
 ### Key Features
 
-* **🛡 Safe Propagation:** Only triggers merges if the original upstream build succeeds.
+* **🛡 Safe Propagation:** Only triggers merges if the original upstream build succeeds. All merges are performed in temporary branches. Actual protected branches are never touched directly. You maintain full control via the generated Pull Requests.
 * **🧩 Flexible Dependency Graphs:** Define complex relationships (e.g., `v1.0` -> `v1.1`, `v1.1` -> `v1.2` & `experiment`).
 * **✋ Intercept & Filter:** uniquely designed to allow **intermediate verification**. The action prepares the merge locally, pauses to let you run your own scripts (e.g., to revert version bumps or run tests), and only pushes the result if those scripts pass.
 * **🤖 Automated PRs:** Automatically opens or updates Pull Requests for the downstream branches.
@@ -52,8 +52,6 @@ sequenceDiagram
     C->>D: Merge PR
     D-)GH: on: push
 ```
-
-**Note:** All merges are performed in temporary branches (e.g., `merge/release/1.0/release/1.1`). This ensures your actual protected branches are never touched directly. You maintain full control via the generated Pull Requests.
 
 # Usage example
 ```yaml
