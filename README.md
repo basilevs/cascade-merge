@@ -20,37 +20,41 @@ This action utilizes a **Main/Post** architecture to give you control over the m
 ```mermaid
 sequenceDiagram
     actor C as Committer
-    participant U as Upstream (release/1.0)
+    participant U as Upstream (e.g. release/1.0)
     participant GH as Verification Workflow
     participant A as Cascade Merge Workflow
-    participant D as Downstream (release/1.1)
+    participant M as Merge (e.g. merge/release/0.1/release/0.2)
+    participant D as Downstream (e.g. release/1.1)
 
     C->>U: Push
+    loop For all downstreams
     U-)GH: on: push
-    GH->>GH: Automated build, test and deploy
+    GH->>GH: Automatically build and test release/1.0
     GH-)A: on: workflow_run
     
+
     rect rgb(240, 248, 255)
-        A->>A: Create or fetch Temporary Branch
+        note right of A: Action
+        M->>A: Create or fetch Temporary Branch
         D->>A: Merge Downstream
         U->>A: Merge Upstream Commit that started Verification Workflow
     end
     
     rect rgb(255, 245, 230)
-        note right of A: Your Workflow Steps
+        note right of A: Your Job Steps
         A->>A: Run Intermediate Scripts on Local Branches
         A->>A: If necessary, reject changes by failing a step
     end
     
     rect rgb(240, 255, 240)
         note right of A: Post Phase
-        A->>A: Push Temp Branch, Create/Update PR
+        A->>M: Push Temp Branch, Create PR
     end
-    A-)GH: on: pull_request
+    M-)GH: on: push
 
     GH->>C: Verify PR build, resolve conflicts
     C->>D: Merge PR
-    D-)GH: on: push
+    end
 ```
 
 # Usage example
