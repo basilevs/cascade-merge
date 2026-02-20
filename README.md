@@ -101,6 +101,6 @@ jobs:
             git diff --name-only --merge-base "origin/$downstream" "${{ github.event.workflow_run.head_sha }}" | grep pom.xml$ && exit 2 || true
           done
 
-      # Step 3: The 'Post' phase of the cascade action runs automatically here.
+      # The 'Post' phase of the cascade action runs automatically here.
       # It will push the branches and create PRs if all steps above succeed.
 ```
