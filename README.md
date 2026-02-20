@@ -20,11 +20,11 @@ This action utilizes a **Main/Post** architecture to give you control over the m
 ```mermaid
 sequenceDiagram
     actor C as Committer
-    participant U as Upstream (e.g. release/1.0)
+    participant U as Upstream branch <br> (e.g. release/1.0)
     participant GH as Verification Workflow
     participant A as Cascade Merge Workflow
-    participant M as Merge (e.g. merge/release/0.1/release/0.2)
-    participant D as Downstream (e.g. release/1.1)
+    participant M as Merge branch <br> (e.g. merge/release/0.1/release/0.2)
+    participant D as Downstream branch<br>(e.g. release/1.1)
 
     C->>U: Push
     loop For all downstreams
