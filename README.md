@@ -84,7 +84,7 @@ jobs:
         id: cascade
         uses: basilevs/cascade-merge@v1
         with:
-          token: ${{ secrets.PAT_TOKEN }} # Used to create a PR, optional
+          token: ${{ secrets.PAT_TOKEN }} # Used to create a PR, optional, recommended
           dependency_graph: |
             release/1.0: release/1.1 experiment4   # supports # comments, multiple spaces are ignored
             release/1.1: release/1.2               # one origin per line
