@@ -4,7 +4,7 @@
 release branches.**
 
 maintaining multiple versions of software often requires "cascading" changes: a
-bug fix applied to `release/1.0` usually needs to be merged into `release/1.1`,
+bugfix applied to `release/1.0` usually needs to be merged into `release/1.1`,
 and subsequently into `release/2.0`. Doing this manually is tedious,
 error-prone, and often neglected.
 
@@ -12,7 +12,7 @@ error-prone, and often neglected.
 builds on your upstream branches and automatically prepares, verifies, and
 proposes merges for your downstream dependencies.
 
-### Key Features
+## Key Features
 
 - **🛡 Safe Propagation:** Only triggers merges if the upstream verification
   build succeeds. All merges are performed in temporary branches. Actual
@@ -27,7 +27,7 @@ proposes merges for your downstream dependencies.
 - **🤖 Automated PRs:** Automatically opens or updates Pull Requests for the
   downstream branches.
 
-### How It Works
+## How It Works
 
 This action utilizes a **Main/Post** architecture to give you control over the
 merge content:
@@ -82,7 +82,7 @@ on:
     workflows: ['Verify branch'] # A workflow that verifies your maintenance branches
     types: [completed] # The only compatible status
     branches-ignore: ['merge/**'] # these are created by the action and have to be manually merged
-    # branches: [release/1.0, release/1.1, release/1.9] # To reduce worfklow report noise, enumerate all origin branches from dependency_graph below. Optional, action will do nothing if branch is not represented in dependency_graph. Conflicts with branches-ignore.
+    # branches: [release/1.0, release/1.1, release/1.9] # To reduce workflow report noise, enumerate all origin branches from dependency_graph below. Optional, action will do nothing if branch is not represented in dependency_graph. Conflicts with branches-ignore.
 
 jobs:
   cascade:

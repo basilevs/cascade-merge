@@ -60,7 +60,12 @@ describe('Cascade Merge Action', () => {
     workDir = path.join(tmpDir, 'workspace')
 
     // Init bare repository to act as 'origin'
-    await exec.exec('git', ['init', '--bare', originDir])
+    await exec.exec('git', [
+      'init',
+      '--bare',
+      '--initial-branch=main',
+      originDir
+    ])
 
     // Clone it to our workspace
     await exec.exec('git', ['clone', originDir, workDir])
