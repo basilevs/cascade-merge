@@ -1,6 +1,6 @@
-import { runMain } from './logic.js'
+import { runPost } from './logic.js'
 import { githubContext } from './github.js'
 
 if (githubContext) {
-  await runMain(githubContext)
+  await runPost(githubContext)
 }

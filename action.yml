@@ -1,24 +1,26 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
-
-# Add your action's branding here. This will appear on the GitHub Marketplace.
-branding:
-  icon: heart
-  color: red
-
-# Define your inputs here.
+name: Cascade Merge
+description: Merges upstream changes to dependent downstream branches using temporary branches.
+author: "Vasili Gulevich"
 inputs:
-  milliseconds:
-    description: Your input description here
+  token:
+    description: "GITHUB_TOKEN or a PAT to create PRs"
+    default: ${{ github.token }}
+  dependency_graph:
+    description: 'Map of branches. Format: "upstream: downstream1 downstream2"'
     required: true
-    default: '1000'
-
-# Define your outputs here.
+  user_name:
+    description: "Git user name for commits"
+    default: "github-actions[bot]"
+  user_email:
+    description: "Git email for commits"
+    default: "41898282+github-actions[bot]@users.noreply.github.com"
 outputs:
-  time:
-    description: Your output description here
-
+  target_branches_list:
+    description: 'Newline-separated list of downstream branches (e.g., release/1.1\nrelease/1.2).'
+  merge_branches_list:
+    description: 'Newline-separated list of temporary merge branches (e.g., origin/merge/release/0.1/release/0.2\norigin/merge/release/0.2/main).'
 runs:
-  using: node24
-  main: dist/index.js
+  using: "node24"
+  main: "dist/main.js"
+  post: "dist/post.js"
+  post-if: success()

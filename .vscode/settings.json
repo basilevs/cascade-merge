@@ -11,5 +11,6 @@
   ],
   "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
     { "text": "Always include a list of key changes." }
-  ]
+  ],
+  "jest.jestCommandLine": "npm run test --"
 }

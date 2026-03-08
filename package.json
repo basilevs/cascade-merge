@@ -1,24 +1,22 @@
 {
-  "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
-  "version": "0.0.0",
-  "author": "",
-  "type": "module",
+  "name": "cascade-merge",
+  "version": "0.0.2",
+  "description": "Cascade Merge Github Action",
   "private": true,
-  "homepage": "https://github.com/actions/typescript-action",
+  "author": "Vasili Gulevich",
+  "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/basilevs/cascade-merge.git"
   },
   "bugs": {
-    "url": "https://github.com/actions/typescript-action/issues"
+    "url": "https://github.com/basilevs/cascade-merge/issues"
   },
+  "homepage": "https://github.com/basilevs/cascade-merge#readme",
   "keywords": [
-    "actions"
+    "actions",
+    "cascade"
   ],
-  "exports": {
-    ".": "./dist/index.js"
-  },
   "engines": {
     "node": ">=24.0.0"
   },
@@ -33,11 +31,14 @@
     "package": "npx rimraf ./dist && npx rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "package:watch": "npm run package -- --watch",
     "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest",
-    "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
+    "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package",
+    "zip": "zip -r cascade-merge . -x .DS_Store node_modules/\\* package-lock.json coverage/\\* dist/\\* .git/\\* .vscode/\\*"
   },
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^3.0.0"
+    "@actions/core": "^3.0.0",
+    "@actions/exec": "^3.0.0",
+    "@actions/github": "^9.0.0"
   },
   "devDependencies": {
     "@eslint/compat": "^2.0.2",
