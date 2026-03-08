@@ -1,5 +1,11 @@
 # Cascade Merge Action
 
+![Linter](https://github.com/actions/typescript-action/actions/workflows/linter.yml/badge.svg)
+![CI](https://github.com/actions/typescript-action/actions/workflows/ci.yml/badge.svg)
+![Check dist/](https://github.com/actions/typescript-action/actions/workflows/check-dist.yml/badge.svg)
+![CodeQL](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml/badge.svg)
+![Coverage](./badges/coverage.svg)
+
 **Automate the propagation of hotfixes and maintenance changes across your
 release branches.**
 
