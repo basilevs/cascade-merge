@@ -23,7 +23,10 @@
       "type": "node",
       "name": "vscode-jest-tests.v2.cascade-merge",
       "request": "launch",
-      "env": {"NODE_OPTIONS": "--experimental-vm-modules", "NODE_NO_WARNINGS": "1"},
+      "env": {
+        "NODE_OPTIONS": "--experimental-vm-modules",
+        "NODE_NO_WARNINGS": "1"
+      },
       "args": [
         "run",
         "test",
@@ -38,6 +41,7 @@
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
+      "sourceMaps": true,
       "disableOptimisticBPs": true,
       "runtimeExecutable": "npm"
     }

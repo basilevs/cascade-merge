@@ -26,15 +26,6 @@ export async function fetch(branches: string[]): Promise<boolean> {
   )
 }
 
-export async function branchExists(branch: string): Promise<boolean> {
-  const exitCode = await exec.exec(
-    'git',
-    ['rev-parse', '--verify', '--quiet', branch],
-    { ignoreReturnCode: true }
-  )
-  return exitCode === 0
-}
-
 /** Fetch and merge or create  a branch  */
 export async function createBranch(
   name: string,

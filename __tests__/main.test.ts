@@ -21,7 +21,22 @@ jest.unstable_mockModule('@actions/core', () => core)
 
 // The module being tested should be imported dynamically. This ensures that the
 // mocks are used in place of any actual dependencies.
-//const { run } = await import('../src/main.js')
+const { runMain, runPost } = await import('../src/logic.js')
+
+async function gitRepositoryHasBranch(
+  repositoryDir: string,
+  branch: string
+): Promise<boolean> {
+  return (
+    (await exec.exec(
+      'git',
+      ['-C', repositoryDir, '--bare', 'rev-parse', '--verify', branch],
+      {
+        ignoreReturnCode: true
+      }
+    )) == 0
+  )
+}
 
 describe('Cascade Merge Action', () => {
   beforeEach(async () => {
@@ -32,6 +47,7 @@ describe('Cascade Merge Action', () => {
     setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
     setOutputMock = jest.spyOn(core, 'setOutput').mockImplementation()
     saveStateMock = jest.spyOn(core, 'saveState').mockImplementation()
+    getStateMock = jest.spyOn(core, 'getState').mockImplementation()
     infoMock = jest.spyOn(core, 'info').mockImplementation()
     noticeMock = jest.spyOn(core, 'notice').mockImplementation()
     jest.spyOn(core, 'startGroup').mockImplementation()
@@ -56,14 +72,14 @@ describe('Cascade Merge Action', () => {
     fs.writeFileSync('base.txt', 'initial content')
     await exec.exec('git', ['add', 'base.txt'])
     await exec.exec('git', ['commit', '-m', 'Initial commit'])
-    await exec.exec('git', ['push', 'origin', 'master'])
+    await exec.exec('git', ['push', 'origin', 'main'])
 
     // Setup Downstream Branch (release/1.1)
     await exec.exec('git', ['checkout', '-b', 'release/1.1'])
     await exec.exec('git', ['push', 'origin', 'release/1.1'])
 
     // Setup Upstream Branch (release/1.0) with a new commit
-    await exec.exec('git', ['checkout', '-b', 'release/1.0', 'master'])
+    await exec.exec('git', ['checkout', '-b', 'release/1.0', 'main'])
     fs.writeFileSync('upstream.txt', 'upstream change')
     await exec.exec('git', ['add', 'upstream.txt'])
     await exec.exec('git', ['commit', '-m', 'Upstream feature'])
@@ -101,25 +117,14 @@ describe('Cascade Merge Action', () => {
     jest.restoreAllMocks()
   })
 
-  it('runs pre-step and parses dependency graph correctly', async () => {
-    // Setup inputs
-    getInputMock.mockImplementation((name: string) => {
-      if (name === 'dependency_graph') return 'release/1.0: release/1.1'
-      return ''
-    })
-
-    const success = await runPre()
-    expect(success).toBe(true)
-  })
-
-  it('fails pre-step if graph contains invalid branches', async () => {
+  it('fails if graph contains invalid branches', async () => {
     getInputMock.mockImplementation((name: string) => {
       // 'merge/' is an invalid prefix based on isValidBranchName
       if (name === 'dependency_graph') return 'merge/release: release/1.1'
       return ''
     })
 
-    await expect(runPre()).rejects.toThrow(/Invalid branch name/)
+    await expect(runMain()).rejects.toThrow(/Invalid branch name/)
   })
 
   it('successfully merges upstream to downstream via temp branch', async () => {
@@ -138,20 +143,13 @@ describe('Cascade Merge Action', () => {
     expect(setFailedMock).not.toHaveBeenCalled()
 
     // Verify git actually created and merged the branch locally
-    let branchCheck = -1
     await exec.exec(
       'git',
       ['rev-parse', '--verify', 'merge/release/1.0/release/1.1'],
       {
-        listeners: {
-          stdline: () => {
-            branchCheck = 0
-          }
-        },
-        ignoreReturnCode: true
+        ignoreReturnCode: false
       }
     )
-    expect(branchCheck).toBe(0)
 
     // Verify the temporary branch contains the file we added in the upstream commit
     await exec.exec('git', ['checkout', 'merge/release/1.0/release/1.1'])
@@ -166,11 +164,26 @@ describe('Cascade Merge Action', () => {
       'merge/release/1.0/release/1.1'
     ])
 
+    await expect(
+      gitRepositoryHasBranch(originDir, 'merge/release/1.0/release/1.1')
+    ).resolves.toBe(false)
+    expect(saveStateMock.mock.calls).toHaveLength(1)
+    const state = saveStateMock.mock.calls[0][1]
     // Verify state was saved for the post phase
     expect(saveStateMock).toHaveBeenCalledWith(
       'MERGE_TASKS_JSON',
       expect.stringContaining('merge/release/1.0/release/1.1')
     )
+
+    getStateMock.mockImplementation((name: string) => {
+      if (name === 'MERGE_TASKS_JSON') return state
+      return ''
+    })
+    await runPost(dummyContext)
+
+    await expect(
+      gitRepositoryHasBranch(originDir, 'merge/release/1.0/release/1.1')
+    ).resolves.toBe(true)
   })
 
   it('skips processing if branch has no downstreams', async () => {
