@@ -78,7 +78,7 @@ sequenceDiagram
     end
 ```
 
-# Usage example
+## Usage example
 
 ```yaml
 name: Cascade Merge
@@ -87,26 +87,35 @@ on:
   workflow_run: # The only compatible trigger. A dedicated workflow is recommended.
     workflows: ['Verify branch'] # A workflow that verifies your maintenance branches
     types: [completed] # The only compatible status
-    branches-ignore: ['merge/**'] # these are created by the action and have to be manually merged
-    # branches: [release/1.0, release/1.1, release/1.9] # To reduce workflow report noise, enumerate all origin branches from dependency_graph below. Optional, action will do nothing if branch is not represented in dependency_graph. Conflicts with branches-ignore.
+    # Do not react to branches authored by the action
+    branches-ignore: ['merge/**']
+    # Enumerate all origin branches from dependency_graph below.
+    # Optional, action will skip such branches anyway
+    # Needed only to reduce workflow run noise
+    # Conflicts with branches-ignore.
+    # branches: [release/1.0, release/1.1, release/1.9]
 
 jobs:
   cascade:
     permissions:
-      pull-requests: write # No PRs are created and warnings are produced without this permission.
-      contents: write # Important. Allows branch creation.
+      # No PRs are created and warnings are produced without this permission.
+      pull-requests: write
+      # Important. Allows branch creation.
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT_TOKEN }} # To trigger downstream workflows after push
+          # To trigger downstream workflows after push
+          token: ${{ secrets.PAT_TOKEN }}
 
       # This creates local branches merge/release/1.0/release/1.1 etc.
       - name: Merge upstream to downstreams in temporary branches
         id: cascade
         uses: basilevs/cascade-merge@v1
         with:
-          token: ${{ secrets.PAT_TOKEN }} # Used to create a PR, optional, recommended
+          # Used to create a PR, optional, recommended
+          token: ${{ secrets.PAT_TOKEN }}
           dependency_graph: |
             release/1.0: release/1.1 experiment4   # supports # comments, multiple spaces are ignored
             release/1.1: release/1.2               # one origin per line
