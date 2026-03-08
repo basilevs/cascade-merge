@@ -32,7 +32,7 @@ if (conclusion !== 'success') {
     triggerWorkflowRun: triggerWorkflowRun,
     currentWorkflowRun: currentRunUrl,
     triggerBranch: payload.workflow_run.head_branch,
-    triggerSha: payload.workflow_run.head_branch,
+    triggerSha: payload.workflow_run.head_sha,
     createPullRequest: async function (
       title: string,
       body: string,
