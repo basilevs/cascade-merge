@@ -117,21 +117,29 @@ jobs:
           # Used to create a PR, optional, recommended
           token: ${{ secrets.PAT_TOKEN }}
           dependency_graph: |
-            release/1.0: release/1.1 experiment4   # supports # comments, multiple spaces are ignored
-            release/1.1: release/1.2               # one origin per line
-            release/1.9: release/2.0               # origin: dependent branches 
+            # supports # comments, multiple spaces are ignored
+            release/1.0: release/1.1 experiment4
+            # one origin per line
+            release/1.1: release/1.2
+            # origin: dependent branches 
+            release/1.9: release/2.0
             release/2.0: main
-            main: feature/1 feature/2              # multiple dependent branches per line
+            # multiple dependent branches per line
+            main: feature/1 feature/2
 
       # Customize to prevent automatic merges of release-dependent changes
       - name: Reject unwanted changes
         if: steps.cascade.outputs.target_branches_list != ''
         run: |
-          echo "${{ steps.cascade.outputs.target_branches_list }}" | while read -r downstream; do
-            # Consider a change to pom.xml to be a version bump and reject the merge
-            git diff --name-only --merge-base "origin/$downstream" "${{ github.event.workflow_run.head_sha }}" | grep pom.xml$ && exit 2 || true
+          echo "${{ steps.cascade.outputs.target_branches_list }}" \
+            | while read -r downstream; do
+            # Consider a change to pom.xml to be a version bump 
+            # and reject the merge
+            git diff --name-only \
+              --merge-base "origin/$downstream" \
+              "${{ github.event.workflow_run.head_sha }}" \
+              | grep pom.xml$ && exit 2 || true
           done
-
       # The 'Post' phase of the cascade action runs automatically here.
       # It will push the branches and create PRs if all steps above succeed.
 ```
