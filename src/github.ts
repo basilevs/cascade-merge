@@ -39,6 +39,28 @@ if (conclusion !== 'success') {
       upstream: string,
       downstream: string
     ) {
+      try {
+        await octokit.rest.repos.createDispatchEvent({
+          ...repo,
+          event_type: 'cascade-push',
+          client_payload: {
+            merge_branch: upstream
+          }
+        })
+      } catch (e) {
+        if (e instanceof RequestError && e.status == 403) {
+          core.info(
+            `
+            Not enough permissions to send \`repository_dispatch\` event.
+            Add \`contents: write\` job permission to enable them.
+            These are only needed to trigger verification workflows when PAT or App token can't be used for checkout.
+            [GITHUB_TOKEN limitations](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
+            `.trim()
+          )
+        } else {
+          throw e
+        }
+      }
       const { data: existingPrs } = await octokit.rest.pulls.list({
         ...repo,
         head: `${repo.owner}:${upstream}`,
