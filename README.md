@@ -1,9 +1,9 @@
 # Cascade Merge Action
 
-![Linter](https://github.com/actions/typescript-action/actions/workflows/linter.yml/badge.svg)
-![CI](https://github.com/actions/typescript-action/actions/workflows/ci.yml/badge.svg)
-![Check dist/](https://github.com/actions/typescript-action/actions/workflows/check-dist.yml/badge.svg)
-![CodeQL](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml/badge.svg)
+[![Lint Codebase](https://github.com/basilevs/cascade-merge/actions/workflows/linter.yml/badge.svg)](https://github.com/basilevs/cascade-merge/actions/workflows/linter.yml)
+[![CI](https://github.com/basilevs/cascade-merge/actions/workflows/ci.yml/badge.svg)](https://github.com/basilevs/cascade-merge/actions/workflows/ci.yml)
+[![Check Transpiled JavaScript](https://github.com/basilevs/cascade-merge/actions/workflows/check-dist.yml/badge.svg)](https://github.com/basilevs/cascade-merge/actions/workflows/check-dist.yml)
+[![CodeQL](https://github.com/basilevs/cascade-merge/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/basilevs/cascade-merge/actions/workflows/codeql-analysis.yml)
 ![Coverage](./badges/coverage.svg)
 
 **Automate the propagation of hotfixes and maintenance changes across your

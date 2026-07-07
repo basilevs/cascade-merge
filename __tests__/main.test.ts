@@ -38,6 +38,19 @@ async function gitRepositoryHasBranch(
   )
 }
 
+let getInputMock
+let setFailedMock
+let setOutputMock
+let saveStateMock
+let getStateMock
+let noticeMock
+let originalCwd: string
+let tmpDir: string
+let originDir: string
+let workDir: string
+let triggerSha: string
+let dummyContext
+
 describe('Cascade Merge Action', () => {
   beforeEach(async () => {
     jest.clearAllMocks()
@@ -48,7 +61,6 @@ describe('Cascade Merge Action', () => {
     setOutputMock = jest.spyOn(core, 'setOutput').mockImplementation()
     saveStateMock = jest.spyOn(core, 'saveState').mockImplementation()
     getStateMock = jest.spyOn(core, 'getState').mockImplementation()
-    infoMock = jest.spyOn(core, 'info').mockImplementation()
     noticeMock = jest.spyOn(core, 'notice').mockImplementation()
     jest.spyOn(core, 'startGroup').mockImplementation()
     jest.spyOn(core, 'endGroup').mockImplementation()
