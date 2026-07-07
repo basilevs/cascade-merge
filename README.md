@@ -78,9 +78,10 @@ sequenceDiagram
     end
 ```
 
-The main phase merges upstream and downstream in a temporary branch, but does not
-push. If all custom steps done after the action, pass, the merge is consdered a
-success and post-phase pushed the temporary branch at the end of the job.
+The main phase merges upstream and downstream in a temporary branch, but does
+not push. If all custom steps done after the action, pass, the merge is
+consdered a success and post-phase pushed the temporary branch at the end of the
+job.
 
 ## Usage example
 
