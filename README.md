@@ -54,20 +54,20 @@ sequenceDiagram
     GH-)A: on: workflow_run
 
 
-    rect rgb(240, 248, 255)
+    rect rgba(240, 248, 255, 0.15)
         note right of A: Action
         M->>A: Create or fetch Temporary Branch
         D->>A: Merge Downstream
         U->>A: Merge Upstream Commit that started Verification Workflow
     end
 
-    rect rgb(255, 245, 230)
+    rect rgba(255, 245, 230, 0.15)
         note right of A: Your Job Steps
         A->>A: Run Intermediate Scripts on Local Branches
         A->>A: If necessary, reject changes by failing a step
     end
 
-    rect rgb(240, 255, 240)
+    rect rgba(240, 255, 240, 0.15)
         note right of A: Post Phase
         A->>M: Push Temp Branch, Create PR
     end
