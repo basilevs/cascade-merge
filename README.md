@@ -6,8 +6,7 @@
 [![CodeQL](https://github.com/basilevs/cascade-merge/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/basilevs/cascade-merge/actions/workflows/codeql-analysis.yml)
 ![Coverage](./badges/coverage.svg)
 
-**Automate the propagation of hotfixes and maintenance changes across your
-release branches.**
+**Automate the propagation of hotfixes across your maintenance branches.**
 
 maintaining multiple versions of software often requires "cascading" changes: a
 bugfix applied to `release/1.0` usually needs to be merged into `release/1.1`,
