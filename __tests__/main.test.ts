@@ -38,6 +38,20 @@ async function gitRepositoryHasBranch(
   )
 }
 
+let getInputMock;
+let setFailedMock;
+let setOutputMock;
+let saveStateMock;
+let getStateMock;
+let infoMock;
+let noticeMock;
+let originalCwd: string;
+let tmpDir: string;
+let originDir: string;
+let workDir: string;
+let triggerSha: string;
+let dummyContext;
+
 describe('Cascade Merge Action', () => {
   beforeEach(async () => {
     jest.clearAllMocks()
